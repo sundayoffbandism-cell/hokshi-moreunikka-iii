@@ -28,6 +28,38 @@ function dwellMs(content: string): number {
   return AUTO_MS + extra;
 }
 
+/** 기록을 남긴 날짜 (한국 시간 기준) 예: 2026. 10. 20 */
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}. ${get("month")}. ${get("day")}`;
+}
+
+/** 카드마다 아주 살짝 다르게 놓인 느낌을 주는 기울기 (-0.8° ~ 0.8°, 같은 기록은 항상 같은 각도) */
+function tiltFor(id: string): number {
+  let sum = 0;
+  for (let i = 0; i < id.length; i++) sum = (sum + id.charCodeAt(i)) % 97;
+  return ((sum % 9) - 4) * 0.2;
+}
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+/** 글이 길수록 손글씨 크기를 조금 줄여서 카드 안에 편안히 담습니다. */
+function sizeClass(length: number): string {
+  if (length > 70) return "is-long";
+  if (length > 40) return "is-mid";
+  return "is-short";
+}
+
 export default function ReadView({ ownId, onWrite }: Props) {
   const [status, setStatus] = useState<Status>("loading");
   const [queue, setQueue] = useState<RecordItem[]>([]);
@@ -132,6 +164,7 @@ export default function ReadView({ ownId, onWrite }: Props) {
         {status === "loading" && (
           <div className="paper-wrap">
             <div className="paper paper-message" aria-busy="true">
+              <span className="hole" aria-hidden="true" />
               <p className="message-text">불러오는 중입니다…</p>
             </div>
           </div>
@@ -140,6 +173,7 @@ export default function ReadView({ ownId, onWrite }: Props) {
         {status === "error" && (
           <div className="paper-wrap">
             <div className="paper paper-message">
+              <span className="hole" aria-hidden="true" />
               <p className="message-text" role="alert">
                 기록을 불러오지 못했습니다.
                 <br />
@@ -160,6 +194,7 @@ export default function ReadView({ ownId, onWrite }: Props) {
         {status === "ready" && count === 0 && (
           <div className="paper-wrap">
             <div className="paper paper-message">
+              <span className="hole" aria-hidden="true" />
               <p className="message-text">
                 아직 남겨진 이야기가 없습니다.
                 <br />
@@ -176,25 +211,43 @@ export default function ReadView({ ownId, onWrite }: Props) {
 
         {status === "ready" && count > 0 && current && (
           <>
-            <div className="paper-wrap">
-              <div
+            <p className="sr-only" aria-live="polite">
+              {`${count}개 중 ${index + 1}번째 기록. 혹시 모르니까, 나는 ${displayText(current.content)}`}
+            </p>
+
+            {/* key 가 바뀌면 카드 한 장이 새로 놓이면서 부드럽게 들어옵니다. */}
+            <div
+              key={current.id}
+              className={`paper-wrap enter-${dir}`}
+              style={{ "--tilt": `${tiltFor(current.id)}deg` } as React.CSSProperties}
+            >
+              <article
                 className="paper"
                 onPointerDown={onPointerDown}
                 onPointerUp={onPointerUp}
                 onPointerCancel={() => (pointer.current = null)}
               >
-                <div
-                  key={current.id}
-                  className={`paper-content enter-${dir}`}
-                  aria-live="polite"
-                >
-                  <p className="paper-lead">혹시 모르니까,</p>
-                  <p className="paper-body">나는 {displayText(current.content)}</p>
-                </div>
-                <p className="paper-count" aria-label={`${count}개 중 ${index + 1}번째 기록`}>
-                  {index + 1} / {count}
-                </p>
-              </div>
+                <span className="hole" aria-hidden="true" />
+
+                <header className="paper-head" aria-hidden="true">
+                  <span className="tag">혹시 모르니까 iii</span>
+                  <span className="tag tag-count">
+                    {pad(index + 1)} / {pad(count)}
+                  </span>
+                </header>
+
+                <section className="field field-main" aria-hidden="true">
+                  <p className="field-label">혹시 모르니까,</p>
+                  <p className={`hand ${sizeClass(current.content.length)}`}>
+                    나는 {displayText(current.content)}
+                  </p>
+                </section>
+
+                <section className="field field-date" aria-hidden="true">
+                  <p className="field-label">남긴 날</p>
+                  <p className="hand hand-date">{formatDate(current.created_at)}</p>
+                </section>
+              </article>
             </div>
 
             <nav className="controls" aria-label="기록 넘기기">
@@ -211,9 +264,9 @@ export default function ReadView({ ownId, onWrite }: Props) {
                 className="text-button"
                 onClick={() => setPlaying((p) => !p)}
                 disabled={count < 2}
-                aria-pressed={playing}
+                aria-label={playing ? "자동 전환 멈춤" : "자동 전환 재생"}
               >
-                {playing ? "자동 전환 멈춤" : "자동 전환 재생"}
+                {playing ? "멈춤" : "재생"}
               </button>
               <button
                 type="button"
