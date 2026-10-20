@@ -1,0 +1,446 @@
+:root {
+  --ivory: #faf9f6;
+  --ink: #2b2a28;
+  --muted: #8c8a84;
+  --line: #dcd9d2;
+  --field: #cfcbc3;
+  --danger: #8a3b2e;
+  --paper: #f7efd9;
+  --desk: #c9c0af;
+  --paper-ink: #2f2a20;
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Noto Sans KR", "Pretendard", "Apple SD Gothic Neo",
+    "Malgun Gothic", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--ivory);
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+
+button,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.view {
+  min-height: 100vh;
+  min-height: 100dvh;
+  animation: viewIn 0.6s ease both;
+}
+
+@keyframes viewIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ───────── 첫 번째 화면: 기록 남기기 ───────── */
+
+.view-write {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: var(--ivory);
+}
+
+.write-wrap {
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+}
+
+.write-eyebrow {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.write-title {
+  margin: 0 0 14px;
+  font-size: clamp(24px, 5.6vw, 34px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.write-desc {
+  margin: 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.write-rule {
+  margin: 40px 0 32px;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.write-form {
+  text-align: left;
+}
+
+.write-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.blank {
+  display: inline-block;
+  width: 6.5em;
+  border-bottom: 1px solid var(--ink);
+  transform: translateY(-1px);
+}
+
+.write-input {
+  display: block;
+  width: 100%;
+  resize: none;
+  padding: 16px 18px;
+  border: 1px solid var(--field);
+  border-radius: 14px;
+  background: var(--ivory);
+  font-size: 16px; /* iOS 에서 입력 시 화면이 확대되지 않도록 16px */
+  line-height: 1.6;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.write-input::placeholder {
+  color: #a9a69f;
+}
+
+.write-input:focus {
+  border-color: var(--ink);
+}
+
+.write-input:disabled {
+  opacity: 0.6;
+}
+
+.write-count {
+  margin: 6px 4px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.write-button {
+  width: 100%;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--ivory);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.write-button:disabled {
+  background: #ecebe8;
+  color: #a4a19a;
+  cursor: not-allowed;
+}
+
+.write-error {
+  min-height: 20px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--danger);
+  text-align: center;
+}
+
+.write-link {
+  display: block;
+  margin: 16px auto 0;
+  padding: 8px;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.write-link:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.write-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ───────── 두 번째 화면: 종이 카드 ───────── */
+
+.view-read {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: radial-gradient(
+      ellipse at 50% 40%,
+      rgba(255, 255, 255, 0.14),
+      rgba(70, 52, 22, 0.14)
+    ),
+    var(--desk);
+}
+
+/* 책상 표면의 아주 옅은 결 */
+.view-read::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: var(--noise);
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.desk {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.paper-wrap {
+  width: min(100%, 440px);
+  transform: rotate(-0.5deg);
+}
+
+.paper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: min(62vh, 400px);
+  padding: 44px 40px 28px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--paper);
+  box-shadow: 0 1px 1px rgba(60, 45, 20, 0.14),
+    0 10px 22px -8px rgba(60, 45, 20, 0.3),
+    0 34px 60px -24px rgba(60, 45, 20, 0.3);
+  color: var(--paper-ink);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+/* 종이 질감 */
+.paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--noise);
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* 가장자리의 은은한 그늘 */
+.paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 44px rgba(150, 115, 50, 0.13);
+  pointer-events: none;
+}
+
+.paper-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.paper-lead {
+  margin: 0 0 22px;
+  font-family: "Nanum Pen Script", "Noto Serif KR", cursive;
+  font-size: 38px;
+  line-height: 1.1;
+}
+
+.paper-body {
+  margin: 0;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", serif;
+  font-size: clamp(19px, 4.8vw, 23px);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.paper-count {
+  position: relative;
+  z-index: 1;
+  margin: 28px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(60, 45, 20, 0.18);
+  font-size: 12px;
+  color: #8b8068;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.enter-next {
+  animation: enterNext 0.5s ease-out both;
+}
+
+.enter-prev {
+  animation: enterPrev 0.5s ease-out both;
+}
+
+@keyframes enterNext {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes enterPrev {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 빈 목록 / 오류 / 로딩 */
+
+.paper-message {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: default;
+}
+
+.message-text {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", serif;
+  font-size: 18px;
+  line-height: 1.85;
+}
+
+.message-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.ghost-button {
+  padding: 9px 18px;
+  border: 1px solid rgba(60, 45, 20, 0.35);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ghost-button:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* 컨트롤 */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+
+.text-button {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-size: 14px;
+  color: #3f382a;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.text-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.text-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.desk-link {
+  margin-top: 10px;
+  padding: 8px;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  color: #4f4735;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .paper {
+    padding: 36px 28px 24px;
+  }
+  .paper-lead {
+    font-size: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view,
+  .enter-next,
+  .enter-prev {
+    animation-duration: 0.01ms;
+  }
+}
