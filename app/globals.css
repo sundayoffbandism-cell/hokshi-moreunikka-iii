@@ -5,10 +5,16 @@
   --line: #dcd9d2;
   --field: #cfcbc3;
   --danger: #8a3b2e;
-  --paper: #f7efd9;
-  --desk: #c9c0af;
-  --paper-ink: #2f2a20;
-  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* 두 번째 화면 */
+  --bg-read: #f4f0e6; /* 미색 배경 */
+  --paper: #ebe5d7; /* 배경보다 한 톤만 진한 종이 */
+  --paper-ink: #23211d;
+  --rule: rgba(35, 33, 29, 0.72);
+  --hand: #34558f; /* 파란 잉크 */
+  --mono: "Nanum Gothic Coding", "D2Coding", "Noto Sans KR", ui-monospace,
+    monospace;
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' result='n'/%3E%3CfeDiffuseLighting in='n' lighting-color='%23fff' surfaceScale='1.6'%3E%3CfeDistantLight azimuth='45' elevation='62'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
 }
 
 * {
@@ -39,6 +45,18 @@ textarea {
 :focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .view {
@@ -199,36 +217,17 @@ textarea {
   cursor: not-allowed;
 }
 
-/* ───────── 두 번째 화면: 종이 카드 ───────── */
+/* ───────── 두 번째 화면: 기록 카드 ───────── */
 
 .view-read {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 32px 16px;
-  background: radial-gradient(
-      ellipse at 50% 40%,
-      rgba(255, 255, 255, 0.14),
-      rgba(70, 52, 22, 0.14)
-    ),
-    var(--desk);
-}
-
-/* 책상 표면의 아주 옅은 결 */
-.view-read::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: var(--noise);
-  opacity: 0.35;
-  mix-blend-mode: multiply;
-  pointer-events: none;
+  background: var(--bg-read);
 }
 
 .desk {
-  position: relative;
-  z-index: 1;
   display: flex;
   width: 100%;
   flex-direction: column;
@@ -236,8 +235,9 @@ textarea {
 }
 
 .paper-wrap {
-  width: min(100%, 440px);
-  transform: rotate(-0.5deg);
+  --tilt: 0deg;
+  width: min(100%, 420px);
+  transform: rotate(var(--tilt));
 }
 
 .paper {
@@ -245,14 +245,14 @@ textarea {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: min(62vh, 400px);
-  padding: 44px 40px 28px;
+  min-height: min(72vh, 480px);
+  padding: 54px 32px 32px;
   overflow: hidden;
-  border-radius: 2px;
+  border-radius: 12px;
   background: var(--paper);
-  box-shadow: 0 1px 1px rgba(60, 45, 20, 0.14),
-    0 10px 22px -8px rgba(60, 45, 20, 0.3),
-    0 34px 60px -24px rgba(60, 45, 20, 0.3);
+  box-shadow: 0 1px 1px rgba(60, 48, 28, 0.08),
+    0 3px 8px rgba(60, 48, 28, 0.06),
+    0 26px 50px -26px rgba(60, 48, 28, 0.3);
   color: var(--paper-ink);
   touch-action: pan-y;
   user-select: none;
@@ -260,92 +260,142 @@ textarea {
   cursor: grab;
 }
 
-/* 종이 질감 */
+/* 종이결: 아주 옅게 */
 .paper::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: var(--noise);
-  opacity: 0.4;
+  border-radius: inherit;
+  background-image: var(--paper-texture);
+  opacity: 0.3;
   mix-blend-mode: multiply;
   pointer-events: none;
 }
 
-/* 가장자리의 은은한 그늘 */
-.paper::after {
-  content: "";
+/* 카드 윗부분의 작은 구멍 */
+.hole {
   position: absolute;
-  inset: 0;
-  box-shadow: inset 0 0 44px rgba(150, 115, 50, 0.13);
-  pointer-events: none;
+  top: 20px;
+  left: 50%;
+  z-index: 1;
+  width: 13px;
+  height: 13px;
+  margin-left: -6.5px;
+  border-radius: 50%;
+  background: var(--bg-read);
+  box-shadow: inset 0 1px 2px rgba(60, 48, 28, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
-.paper-content {
+.paper-head {
   position: relative;
   z-index: 1;
-  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
 }
 
-.paper-lead {
-  margin: 0 0 22px;
-  font-family: "Nanum Pen Script", "Noto Serif KR", cursive;
-  font-size: 38px;
-  line-height: 1.1;
-}
-
-.paper-body {
-  margin: 0;
-  font-family: "Noto Serif KR", "Nanum Myeongjo", serif;
-  font-size: clamp(19px, 4.8vw, 23px);
-  line-height: 1.75;
-  overflow-wrap: anywhere;
-}
-
-.paper-count {
-  position: relative;
-  z-index: 1;
-  margin: 28px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid rgba(60, 45, 20, 0.18);
+.tag {
+  font-family: var(--mono);
   font-size: 12px;
-  color: #8b8068;
-  text-align: right;
+  letter-spacing: 0.06em;
+}
+
+.tag-count {
   font-variant-numeric: tabular-nums;
 }
 
+.field {
+  position: relative;
+  z-index: 1;
+}
+
+.field-main {
+  flex: 1;
+  padding-top: 26px;
+}
+
+.field-date {
+  padding-top: 22px;
+}
+
+.field-label {
+  margin: 0 0 6px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+}
+
+/* 파란 잉크로 괘선 위에 쓴 손글씨 */
+.hand {
+  --lh: 52px;
+  margin: 0;
+  font-family: "Nanum Pen Script", cursive;
+  font-size: 34px;
+  line-height: var(--lh);
+  color: var(--hand);
+  overflow-wrap: anywhere;
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--lh) - 1px),
+    var(--rule) calc(var(--lh) - 1px)
+  );
+  background-size: 100% var(--lh);
+  background-repeat: repeat-y;
+}
+
+.hand.is-mid {
+  --lh: 46px;
+  font-size: 30px;
+}
+
+.hand.is-long {
+  --lh: 40px;
+  font-size: 26px;
+}
+
+.hand-date {
+  --lh: 44px;
+  font-size: 30px;
+}
+
+/* 카드가 새로 놓이는 움직임 */
 .enter-next {
-  animation: enterNext 0.5s ease-out both;
+  animation: enterNext 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .enter-prev {
-  animation: enterPrev 0.5s ease-out both;
+  animation: enterPrev 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @keyframes enterNext {
   from {
     opacity: 0;
-    transform: translateX(18px);
+    transform: translateX(22px) rotate(calc(var(--tilt) + 1.2deg));
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: translateX(0) rotate(var(--tilt));
   }
 }
 
 @keyframes enterPrev {
   from {
     opacity: 0;
-    transform: translateX(-18px);
+    transform: translateX(-22px) rotate(calc(var(--tilt) - 1.2deg));
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: translateX(0) rotate(var(--tilt));
   }
 }
 
 /* 빈 목록 / 오류 / 로딩 */
 
 .paper-message {
+  min-height: min(52vh, 340px);
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -356,9 +406,9 @@ textarea {
   position: relative;
   z-index: 1;
   margin: 0;
-  font-family: "Noto Serif KR", "Nanum Myeongjo", serif;
-  font-size: 18px;
-  line-height: 1.85;
+  font-size: 15px;
+  line-height: 2;
+  color: var(--paper-ink);
 }
 
 .message-actions {
@@ -368,72 +418,80 @@ textarea {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin-top: 28px;
+  margin-top: 26px;
 }
 
 .ghost-button {
   padding: 9px 18px;
-  border: 1px solid rgba(60, 45, 20, 0.35);
+  border: 1px solid rgba(35, 33, 29, 0.5);
   border-radius: 999px;
   background: transparent;
-  font-size: 14px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .ghost-button:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 /* 컨트롤 */
 
 .controls {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin-top: 28px;
+  margin-top: 30px;
 }
 
 .text-button {
-  padding: 10px 14px;
+  padding: 8px 20px;
   border: 0;
-  border-radius: 999px;
   background: none;
-  font-size: 14px;
-  color: #3f382a;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: rgba(35, 33, 29, 0.75);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: color 0.2s;
+}
+
+.text-button + .text-button {
+  border-left: 1px solid rgba(35, 33, 29, 0.25);
 }
 
 .text-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
+  color: #000;
 }
 
 .text-button:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 .desk-link {
-  margin-top: 10px;
+  margin-top: 14px;
   padding: 8px;
   border: 0;
   background: none;
-  font-size: 13px;
-  color: #4f4735;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(35, 33, 29, 0.6);
   text-decoration: underline;
   text-underline-offset: 4px;
   cursor: pointer;
 }
 
+.desk-link:hover {
+  color: #000;
+}
+
 @media (max-width: 480px) {
   .paper {
-    padding: 36px 28px 24px;
-  }
-  .paper-lead {
-    font-size: 34px;
+    padding: 52px 24px 28px;
   }
 }
 
